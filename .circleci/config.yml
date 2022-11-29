@@ -31,6 +31,9 @@ jobs:
           name: "Maven Build"
           command: mvn clean install -DskipTests
       - run:
+          name: "Maven Deploy"
+          command: mvn clean deploy -DskipTests -DmuleDeploy
+      - run:
           name: "Maven Test"
           command: mvn clean test
 
