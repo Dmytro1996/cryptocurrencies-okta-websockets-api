@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+	xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<munit:config name="websocket-impl-test-suite.xml" />
+	<munit:test name="websocket-impl-test-suite-onNewMessageImplFlowTest" doc:id="da19992a-70be-414a-859b-893e858d8428" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Introspect token request" doc:id="742444cc-dfed-4403-867b-f5f741620de3" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="2349496a-38b4-41f4-8163-051be4ffc1ca" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[output application/json&#10;  ---&#10;  {"active": true}&#10;]' mediaType="application/json" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock Subscribe groups" doc:id="cdc8a86c-ecab-4891-bb9b-16f0fdf80e90" processor="websocket:subscribe-groups">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="fa655e69-dccd-4691-bb1f-1012753aa873" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[null]" mediaType="application/java" encoding="UTF-8" />
+					<munit-tools:attributes value='#[&#10;{"statusCode": 200}&#10;]' mediaType="application/java" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<ee:transform doc:name="Transform Message" doc:id="dc22e0bc-4efd-4347-b297-4959121d54d4" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output text/plain
+---
+"{
+	\"sec_token\": \"12345\",
+	\"coins\": \"BTC, ETC, ALGO\"
+}"]]></ee:set-payload>
+					<ee:set-attributes ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	socketId: "12345"
+}]]></ee:set-attributes>
+				</ee:message>
+			</ee:transform>
+			<flow-ref doc:name="Flow-ref to onNewMessageImplFlow" doc:id="2678e47d-d24c-44d3-ad8e-d94a4e2cc84b" name="onNewMessageImplFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Subscribe groups" doc:id="039d68a7-f65c-400e-8bd2-75601ba5b795" processor="websocket:subscribe-groups">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="fa655e69-dccd-4691-bb1f-1012753aa873" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>
