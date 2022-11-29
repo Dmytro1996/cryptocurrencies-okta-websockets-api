@@ -29,7 +29,7 @@ jobs:
       - checkout
       - run:
           name: "Maven Build"
-          command: mvn clean install
+          command: mvn clean install -Dskiptests
       - run:
           name: "Maven Test"
           command: mvn clean test
