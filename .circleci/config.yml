@@ -32,7 +32,12 @@ jobs:
           command: mvn clean install -DskipTests
       - run:
           name: "Maven Deploy"
-          command: mvn clean deploy -DskipTests -DmuleDeploy
+          command: mvn clean deploy -DskipTests -DmuleDeploy\
+-DMULE_ENV=${MULE_ENV}\
+-DMULE_USERNAME=${MULE_USERNAME}\
+-DMULE_PASS=${MULE_PASS}\
+-DMULE_AUTH_TOKEN=${MULE_AUTH_TOKEN}\
+-DMULE_BUSINESS_GROUP=${MULE_BUSINESS_GROUP}
       - run:
           name: "Maven Test"
           command: mvn clean test
@@ -43,9 +48,4 @@ workflows:
   say-hello-workflow:
     jobs:
       - say-hello
-      - build-app\
--DMULE_ENV=${MULE_ENV}\
--DMULE_USERNAME=${MULE_USERNAME}\
--DMULE_PASS=${MULE_PASS}\
--DMULE_AUTH_TOKEN=${MULE_AUTH_TOKEN}\
--DMULE_BUSINESS_GROUP=${MULE_BUSINESS_GROUP}
+      - build-app
