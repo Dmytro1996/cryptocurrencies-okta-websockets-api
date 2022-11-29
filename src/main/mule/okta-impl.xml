@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="getTokenSubFlow" doc:id="4ad53383-c10d-4d9f-a4cd-850ce76df778" >
+		<http:request method="POST" doc:name="Obtain token" doc:id="75c8d569-c020-4b5b-806d-5efb2e498ece" config-ref="Okta_HTTP_Request_configuration" path="/oauth2/v1/token">
+			<http:body ><![CDATA[#[output application/x-www-form-urlencoded
+---
+{
+    "grant_type": "password",
+    "username": payload.email,
+    "password": payload.password,
+    "scope": payload.scope,
+    (if(payload.redirectUri?) "redirect_uri": payload.redirectUri else null)
+}]]]></http:body>
+			<http:headers ><![CDATA[#[import toBase64 from dw::core::Binaries
+---
+{
+	"Authorization": "Basic " ++ toBase64("${okta.clientId}" ++ ":" ++ "${okta.clientSecret}"),
+	"Content-Type": "application/x-www-form-urlencoded"
+}]]]></http:headers>
+			<http:response-validator >
+				<http:success-status-code-validator values="200..599" />
+			</http:response-validator>
+		</http:request>
+		<set-variable value="#[attributes.statusCode]" doc:name="Set httpStatus" doc:id="2b672595-8750-4b09-aeed-b47cd8a5caf9" variableName="httpStatus"/>
+	</sub-flow>
+	<sub-flow name="introspectTokenSubFlow" doc:id="686145ca-9e00-4f58-b1aa-9a872c13f0eb" >
+		<http:request method="POST" doc:name="Introspect token" doc:id="2349496a-38b4-41f4-8163-051be4ffc1ca" config-ref="Okta_HTTP_Request_configuration" path="/oauth2/v1/introspect">
+			<http:body ><![CDATA[#[output application/x-www-form-urlencoded
+---
+{
+	"token": (attributes.headers."Authorization" splitBy " ")[1] default "",
+	"token_type_hint": "access_token"
+}]]]></http:body>
+			<http:headers ><![CDATA[#[import toBase64 from dw::core::Binaries
+---
+{
+	"Authorization": "Basic " ++ toBase64("${okta.clientId}" ++ ":" ++ "${okta.clientSecret}")
+}]]]></http:headers>
+			<http:response-validator >
+				<http:success-status-code-validator values="200..599" />
+			</http:response-validator>
+		</http:request>
+		<validation:is-true doc:name="Is true" doc:id="4063c455-8af2-4ffb-99f4-c100eead630d" expression="#[payload.active]" message='#["Invalid token"]'>
+			<error-mapping sourceType="VALIDATION:INVALID_BOOLEAN" targetType="APP:INVALID_TOKEN" />
+		</validation:is-true>
+	</sub-flow>
+	<sub-flow name="createUserSubFlow" doc:id="8bea57d2-2ce9-488b-ada2-2d2e9f28db04" >
+		<ee:transform doc:name="Remap input" doc:id="dcbd926d-b539-4418-a64e-8c0b44d6644e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "profile": {
+    "firstName": payload.firstname,
+    "lastName": payload.lastname,
+    "email": payload.email,
+    "login": payload.email
+  },
+  "credentials": {
+    "password" : { "value": payload.password },
+    (if(payload.recoveryQuestion?)
+      "recovery_question": {
+        "question": "Who's a major player in the cowboy scene?",
+        "answer": "Annie Oakley"
+      }
+    else null)
+  }
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="POST" doc:name="Create Okta user" doc:id="813f3ed2-3ed6-4f36-8033-a033efe9958b" config-ref="Okta_HTTP_Request_configuration" path="/api/v1/users?activate=true">
+			<http:headers ><![CDATA[#[{
+	"Authorization": "SSWS " ++ "${okta.token}"
+}]]]></http:headers>
+			<http:response-validator >
+				<http:success-status-code-validator values="200..599" />
+			</http:response-validator>
+		</http:request>
+		<set-variable value="#[attributes.statusCode]" doc:name="Set httpStatus" doc:id="1aa7670c-9c40-42d8-aa7b-77d8f31ce52b" variableName="httpStatus" />
+	</sub-flow>
+	<sub-flow name="deleteUserSubFlow" doc:id="bcd0a051-9ccf-49ea-8b97-566113964ee4" >
+		<flow-ref doc:name="introspectTokenSubFlow" doc:id="16e5bf80-7977-4a78-b7fa-1337d8991120" name="introspectTokenSubFlow"/>
+		<http:request method="DELETE" doc:name="Delete Okta user" doc:id="6f96a6e1-a191-4d03-ab50-97b0aa3a8bd2" config-ref="Okta_HTTP_Request_configuration" path="/api/v1/users/{userId}" sendCorrelationId="ALWAYS">
+			<http:headers ><![CDATA[#[{
+	"Authorization": "SSWS " ++ "${okta.token}"
+}]]]></http:headers>
+			<http:uri-params ><![CDATA[#[{
+	userId: payload.uid
+}]]]></http:uri-params>
+		</http:request>
+	</sub-flow>
+</mule>

@@ -1,0 +1,33 @@
+#%RAML 1.0 Library
+
+types:
+  User:
+    properties:
+      firstname:
+        type: string
+        required: true
+        example: "Bob"
+      lastname:
+        type: string
+        required: true
+        example: "Robertson"
+      email:
+        type: string
+        required: true
+        example: "bob@mail.com"
+      password:
+        type: string
+        required: true
+        example: "12345"
+      recoveryQuestion:
+        type: RecoveryQuestion
+        required: false
+        
+  RecoveryQuestion:
+    properties:
+      question:
+        type: string
+        required: true
+      answear:
+        type: string
+        required: true        

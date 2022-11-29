@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:websocket="http://www.mulesoft.org/schema/mule/websocket"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/websocket http://www.mulesoft.org/schema/mule/websocket/current/mule-websocket.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="ebec2a47-e615-4731-ab54-6c1d7c7fa704" >
+		<http:listener-connection host="0.0.0.0" port="${http.port}" />
+	</http:listener-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="9045bb6e-3b78-4b7d-8aa8-227e6b9e5399" file="config.yaml" />
+	<http:request-config name="Okta_HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="a19dfa3b-1c72-465f-a61e-9581bcdc7b36">
+		<http:request-connection protocol="HTTPS" host="${okta.host}" port="${okta.port}" />
+	</http:request-config>
+	<configuration doc:name="Configuration" doc:id="77b9597d-0f98-4348-a5de-5918ef11058d" defaultErrorHandler-ref="globalErrorHandler" />
+	<websocket:config name="WebSockets_Config" doc:name="WebSockets Config" doc:id="83e803d5-6e70-492c-91f8-a248d37c914e" >
+		<websocket:connection >
+			<websocket:server-settings listenerConfig="HTTP_Listener_config" />
+		</websocket:connection>
+	</websocket:config>
+	<http:request-config name="Cryptoranking_HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="d9ae3327-9f9c-493b-934c-a99e06d5541d" basePath="${cryptoranking.version}">
+		<http:request-connection host="${cryptoranking.host}" port="${cryptoranking.port}" protocol="HTTPS"/>
+	</http:request-config>
+	<error-handler name="globalErrorHandler">
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="35f883ef-c793-431a-af54-c09b27e7c1cc" type="APP:INVALID_TOKEN">
+				<ee:transform doc:name="Transform Message" doc:id="eefec03b-a7b9-40f4-b305-f869c00d785b">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Invalid token"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="#[401 as Number]" doc:name="Set httpStatus" doc:id="c1236b5a-b66b-4319-9d47-bed68e6d7876" variableName="httpStatus" />
+			</on-error-propagate>
+		</error-handler>
+</mule>

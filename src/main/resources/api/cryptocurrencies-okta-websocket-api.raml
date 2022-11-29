@@ -1,0 +1,63 @@
+#%RAML 1.0
+title: Okta Websocket API
+version: v1
+
+uses:
+  UserLibrary: libraries/UserLibrary.raml
+  
+types:
+  TokenRequest: !include datatypes/TokenRequest.raml
+  
+traits:
+  authToken:
+    headers:
+      Authorization:
+        type: string
+        required: true
+        pattern: "Bearer .+"
+        example: "Bearer uvbvjhv"
+
+/createUser:
+  post:
+    body:
+      application/json:
+        type: UserLibrary.User
+        example: !include examples/user.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: {"id": "12345"}
+
+/token:
+  post:
+    body:
+      application/json:
+        type: TokenRequest
+        example: !include examples/tokenRequest.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: {"access_token": "wysgedc732gegwi"}
+  /introspect:
+    post:
+      is: [authToken]
+      responses:
+        200:
+          body:
+            application/json:
+              example: {"active": true}
+              
+/deleteUser:
+  delete:
+    is: [authToken]
+            
+/close:
+  get:
+    is: [authToken]
+    responses:
+      200:
+        body:
+          application/json:
+            example: {"message": "Websockets closed."}

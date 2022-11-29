@@ -1,0 +1,14 @@
+http:
+  port: "8081"
+  
+okta:
+  host: "oktaHost"
+  port: "443"
+  token: "oktaToken"
+  clientId: "oktaClientId"
+  clientSecret: "oktaClientSecret"
+  
+cryptoranking:
+  host: api.coinranking.com
+  version: /v2
+  port: "443"

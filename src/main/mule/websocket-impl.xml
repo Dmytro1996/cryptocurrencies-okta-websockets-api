@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:websocket="http://www.mulesoft.org/schema/mule/websocket"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/websocket http://www.mulesoft.org/schema/mule/websocket/current/mule-websocket.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="onNewConnectionImplFlow" doc:id="f1ded622-85e8-4d3c-a8bc-f3dcd34f2de4" >
+		<websocket:on-inbound-connection doc:name="On New Inbound Connection" doc:id="f75f80bd-3ac3-4f4d-a5cc-28ee774c18da" config-ref="WebSockets_Config" path="/createConnection"/>
+		<logger level="INFO" doc:name="Logger" doc:id="323c3e7d-b9ac-4405-9af0-13291f575884" message='#["Connection estabilished."]'/>
+	</flow>
+	<flow name="onNewMessageImplFlow" doc:id="93cb55bc-9fd3-4096-8e0c-6219c221887e" >
+		<websocket:inbound-listener doc:name="On New Inbound Message" doc:id="0d6b5a0f-051d-4d74-988f-34d06a3cc285" config-ref="WebSockets_Config" path="/createConnection"/>
+		<set-variable value='#[output application/json
+---
+{
+	socketId: attributes.socketId,
+	groups: read(payload, "application/json").coins splitBy(/[^A-Z]+/)
+}
+//"BTC.ETC;TVE" splitBy(/[^A-Z]+/)]' doc:name="Set neededData" doc:id="f1e36b49-bcbb-46d1-8534-08f89f44d95c" variableName="neededData"/>
+		<ee:transform doc:name="Transform Message" doc:id="37f321c2-aef1-42c5-819c-168b4e81db3d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-payload>
+				<ee:set-attributes ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	headers:
+	  Authorization: "Bearer " ++ read(payload, "application/json").sec_token
+}]]></ee:set-attributes>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="introspectTokenSubFlow" doc:id="52dd97ca-9da4-4eb7-bf3c-a5e84c0566e4" name="introspectTokenSubFlow"/>
+		<websocket:subscribe-groups doc:name="Subscribe groups" doc:id="fa655e69-dccd-4691-bb1f-1012753aa873" config-ref="WebSockets_Config" socketId="#[vars.neededData.socketId]" groups="#[vars.neededData.groups]"/>
+	</flow>
+	<sub-flow name="closeImplSubFlow" doc:id="98179ad3-4d0b-4cd6-8817-357586dff838" >
+		<flow-ref doc:name="introspectTokenSubFlow" doc:id="ac87c206-bd1d-40a2-92c7-3a0fff2b9b6b" name="introspectTokenSubFlow" />
+		<websocket:bulk-close-sockets doc:name="Bulk close sockets" doc:id="50ce35d5-c2c5-461c-baee-1af456f34f0d" config-ref="WebSockets_Config"/>
+		<set-payload value='#[output application/json&#10;---&#10;{&#10;	message: "All connections closed"&#10;}]' doc:name="Set Payload" doc:id="07b95597-3619-44f1-b0f7-c623a0f01930" />
+	</sub-flow>
+	<sub-flow name="broadcastImplSubFlow" doc:id="e498e8c1-6d9c-48b8-83f3-2633f92579c4" >
+		<http:request method="GET" doc:name="Request" doc:id="4f66273e-f3ae-4947-8b6e-118611ae7bcc" config-ref="Cryptoranking_HTTP_Request_configuration" path="/coins"/>
+		<foreach doc:name="For Each" doc:id="167be8ee-3ada-4ea6-bb43-9d40307ed52e" collection="#[output application/json
+---
+payload.data.coins map(coin)-&gt;{
+	symbol: coin.symbol,
+	price: coin.price
+}]">
+			<websocket:broadcast doc:name="Broadcast" doc:id="6d3cb8a5-6361-48c0-8351-2434b9209b9b" config-ref="WebSockets_Config" path="/createConnection" groups="#[[payload.symbol]]">
+				<websocket:content ><![CDATA[#[payload.symbol ++ ": " ++ payload.price]]]></websocket:content>
+			</websocket:broadcast>
+		</foreach>
+	</sub-flow>
+</mule>

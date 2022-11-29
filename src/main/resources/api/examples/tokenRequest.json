@@ -1,0 +1,5 @@
+{
+    "email": "dmytro20@mail.com",
+    "password": "oktapass12345",
+    "scope": "okta.apiTokens.read"
+}

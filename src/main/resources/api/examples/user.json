@@ -1,0 +1,10 @@
+{
+    "firstname": "Bob",
+    "lastname": "Robertson",
+    "email": "bob@mail.com",
+    "password": "12345abcd",
+    "recoveryQuestion": {
+        "question": "What is your favorite number?",
+        "answear": "10"
+    }
+}

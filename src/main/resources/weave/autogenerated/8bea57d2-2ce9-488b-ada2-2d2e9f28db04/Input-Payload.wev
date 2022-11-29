@@ -1,0 +1,15 @@
+%dw 2.0
+
+type auto_8bea57d2_2ce9_488b_ada2_2d2e9f28db04_Input_Payload = {
+  firstname: String, 
+  password: String, 
+  recoveryQuestion?: {
+    question: String, 
+    answear: String, 
+    _?: Any
+  }, 
+  email: String, 
+  lastname: String, 
+  _?: Any
+}
+
