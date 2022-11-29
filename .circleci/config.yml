@@ -44,5 +44,5 @@ workflows:
     jobs:
       - say-hello
       - build-app
-          contexts:
+          context:
             - mule
