@@ -39,7 +39,7 @@
 						<applicationName>dmytro-danylov-test-app</applicationName>
 						<environment>${MULE_ENV}</environment>
 						<authToken>${MULE_AUTH_TOKEN}</authToken>
-						<businessGroup>${MULE_BUSINESS_GROUP}</businessGroup>
+						<businessGroup>Healthcare PoC</businessGroup>
 						<objectStoreV2>true</objectStoreV2>
 					</cloudHubDeployment>
 				</configuration>
