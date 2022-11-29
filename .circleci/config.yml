@@ -44,3 +44,9 @@ workflows:
     jobs:
       - say-hello
       - build-app
+
+-DMULE_ENV=${MULE_ENV}\
+-DMULE_USERNAME=${MULE_USERNAME}\
+-DMULE_PASS=${MULE_PASS}\
+-DMULE_AUTH_TOKEN=${MULE_AUTH_TOKEN}\
+-DMULE_BUSINESS_GROUP=${MULE_BUSINESS_GROUP}
