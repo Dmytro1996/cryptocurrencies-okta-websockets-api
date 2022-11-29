@@ -43,6 +43,6 @@ workflows:
   say-hello-workflow:
     jobs:
       - say-hello
-      - build-app
+      - build-app:
           context:
             - mule
