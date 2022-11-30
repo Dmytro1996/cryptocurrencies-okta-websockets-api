@@ -41,6 +41,13 @@
 						<authToken>${MULE_AUTH_TOKEN}</authToken>
 						<businessGroup>${MULE_BUSINESS_GROUP}</businessGroup>
 						<objectStoreV2>true</objectStoreV2>
+						<properties>
+						    <http.port>${http_port}</http.port>
+						    <okta.host>${okta_host}</okta.host>
+						    <okta.token>${okta_token}</okta.token>
+						    <okta.clientId>${okta_client_id}</okta.clientId>
+						    <okta.clientSecret>${okta_client_secret}</okta.clientSecret>
+						</properties>
 					</cloudHubDeployment>
 				</configuration>
 			</plugin>
@@ -61,8 +68,11 @@
 				<configuration>
 					<coverage>
 						<runCoverage>true</runCoverage>
+						<failBuild>true</failBuild>
+						<requiredApplicationCoverage>10</requiredApplicationCoverage>
 						<formats>
 							<format>html</format>
+							<format>console</format>
 						</formats>
 					</coverage>
 				</configuration>
