@@ -28,6 +28,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: "Maven Version"
+          command: mvn -version
+      - run:
           name: "Maven Build"
           command: mvn clean install -DskipTests
       - run:
