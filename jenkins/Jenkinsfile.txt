@@ -1,5 +1,9 @@
 pipeline {
-    action any
+    action {
+        docker {
+            image 'cimg/base:stable'
+        }
+    }
     stages {
         stage ("Test Pipeline"){
             steps {
