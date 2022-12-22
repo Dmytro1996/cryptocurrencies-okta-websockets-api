@@ -1,6 +1,11 @@
 pipeline {
     action any
     stages {
+        stage ("Test Pipeline"){
+            steps {
+                echo "Hello, world!"
+            }
+        }
         stage ("Test"){
             steps {
                 mvn clean install
