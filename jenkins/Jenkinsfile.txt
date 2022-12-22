@@ -1,0 +1,20 @@
+pipeline {
+    action any
+    stages {
+        stage ("Test"){
+            steps {
+                mvn clean install
+            }
+        }
+        stage ("Build"){
+            steps {
+                mvn clean install -DskipTests
+            }
+        }
+        stage ("Deploy"){
+            steps {
+                mvn clean deploy -DmuleDeploy
+            }
+        }
+    }
+}
