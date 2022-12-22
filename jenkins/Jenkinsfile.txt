@@ -1,5 +1,5 @@
 pipeline {
-    action any
+    agent any
     stages {
         stage ("Test Pipeline"){
             steps {
