@@ -8,17 +8,17 @@ pipeline {
         }
         stage ("Test"){
             steps {
-                mvn clean install
+                bat 'mvn clean install'
             }
         }
         stage ("Build"){
             steps {
-                mvn clean install -DskipTests
+                bat 'mvn clean install -DskipTests'
             }
         }
         stage ("Deploy"){
             steps {
-                mvn clean deploy -DmuleDeploy
+                bat 'mvn clean deploy -DmuleDeploy'
             }
         }
     }
