@@ -18,7 +18,7 @@ pipeline {
         }
         stage ("Deploy"){
             steps {
-                bat 'mvn clean deploy -DmuleDeploy'
+                bat 'mvn clean deploy -DmuleDeploy -Dokta_host=${OKTA_HOST} -Dokta_client_id=${OKTA_CLIENT_ID} -Dokta_token=${OKTA_TOKEN} -Dokta_client_secret=${OKTA_CLIENT_SECRET} -Dhttp_port=${HTTP_PORT}'
             }
         }
     }
