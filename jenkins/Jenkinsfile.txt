@@ -16,13 +16,18 @@ pipeline {
                 bat 'mvn clean install -DskipTests'
             }
         }
-        parallel {
-            stage ("Deploy"){
-                steps {
-                    bat 'mvn clean deploy -DmuleDeploy -Dokta_host=${OKTA_HOST} -Dokta_client_id=${OKTA_CLIENT_ID} -Dokta_token=${OKTA_TOKEN} -Dokta_client_secret=${OKTA_CLIENT_SECRET} -Dhttp_port=${HTTP_PORT}'
+        stage ("Parallel deploy"){
+            parallel {
+                stage ("Deploy"){
+                    agent {
+                        label "for-deploy"
+                    }
+                    steps {
+                        bat 'mvn clean deploy -DmuleDeploy -Dokta_host=${OKTA_HOST} -Dokta_client_id=${OKTA_CLIENT_ID} -Dokta_token=${OKTA_TOKEN} -Dokta_client_secret=${OKTA_CLIENT_SECRET} -Dhttp_port=${HTTP_PORT}'
+                    }
                 }
             }
-        }        
+        }    
     }
     post {
         failure {
