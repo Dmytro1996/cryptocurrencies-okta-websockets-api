@@ -11,7 +11,7 @@ pipeline {
                 bat 'mvn clean install'
             }
         }
-        stage ("Parallel deploy"){
+        stage ("Parallel stage"){
             parallel {
                 stage ("Build"){
                     steps {
