@@ -23,10 +23,22 @@ pipeline {
         }        
     }
     post {
-            always {
-                emailtext body: 'A test email',
-                recipientProveders: [[$class: 'DevelopersRecipientProvider'],[$class: 'RequesterRecipientProvider']],
-                subject: 'Test'
-            }
+        failure {
+            mail to: 'dmytrodanylov@ukr.net',
+            subject: "Build failed in Jenkins: ${env.JOB_NAME}",
+            body: "${currentBuild.currentResult}: Job ${env.JOB_NAME}\nMore Info can be found here: ${env.BUILD_URL}"
+        }
+        
+        unstable {
+            mail to: 'dmytrodanylov@ukr.net',
+            subject: "Build was unstable in Jenkins: ${env.JOB_NAME}",
+            body: "${currentBuild.currentResult}: Job ${env.JOB_NAME}\nMore Info can be found here: ${env.BUILD_URL}"
+        }
+        
+        success {
+            mail to: 'dmytrodanylov@ukr.net',
+            subject: "Successful Jenkins build: ${env.JOB_NAME}",
+            body: "${currentBuild.currentResult}: Job ${env.JOB_NAME}\nMore Info can be found here: ${env.BUILD_URL}"
+        }
     }
 }
