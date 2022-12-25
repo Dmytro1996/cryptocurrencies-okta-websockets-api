@@ -1,4 +1,5 @@
 pipeline {
+    autocancelConsecutiveBuilds()
     agent any
     stages {
         stage ("Test Pipeline"){
