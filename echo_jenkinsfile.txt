@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    triggers {
+        cron(env.BRANCH_NAME=='master'?'H/1 * * * *':'')
+    }
     stages {
         stage ("Echo command"){
             steps {
