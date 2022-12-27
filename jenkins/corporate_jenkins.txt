@@ -1,0 +1,69 @@
+pipeline {
+    options {
+        office365ConnectorWebhooks([
+            [name: "jenkins_ms_teams_webhook", url: "${TEAMS_WEBHOOK}", notifyBackToNormal: true, notifyFailure: true, notifyRepeatedFailure: true, notifySuccess: true, notifyAborted: true]
+        ])
+    }    
+    triggers {
+        cron(env.BRANCH_NAME=='master'?'H 9 * * *':'')
+    }
+    agent {
+        docker { 
+            image 'circleci/openjdk:8-jdk' 
+            args '-v $HOME/.m2:/root/.m2:z -u root'            
+        }
+    }
+    stages {
+        stage ("Test Pipeline"){
+            steps {
+                echo "Hello, world!"
+            }
+        }
+        stage ("Test"){
+            steps {
+                bat 'mvn clean install'
+            }
+        }
+        stage ("Parallel stage"){
+            parallel {
+                stage ("Build"){
+                    when {
+                        not {
+                            branch 'master'
+                        }
+                    }
+                    steps {
+                        bat 'mvn clean install -DskipTests'
+                    }
+                }
+                stage ("Deploy"){
+                    when {
+                        branch 'master'
+                    }
+                    steps {
+                        bat 'mvn clean deploy -DmuleDeploy -Dokta_host=${OKTA_HOST} -Dokta_client_id=${OKTA_CLIENT_ID} -Dokta_token=${OKTA_TOKEN} -Dokta_client_secret=${OKTA_CLIENT_SECRET} -Dhttp_port=${HTTP_PORT}'
+                    }
+                }
+            }
+        }    
+    }
+    post {
+        failure {
+            mail to: 'dmytrodanylov@ukr.net',
+            subject: "Build failed in Jenkins: ${env.JOB_NAME}",
+            body: "${currentBuild.currentResult}: Job ${env.JOB_NAME}\nMore Info can be found here: ${env.BUILD_URL}"
+        }
+        
+        unstable {
+            mail to: 'dmytrodanylov@ukr.net',
+            subject: "Build was unstable in Jenkins: ${env.JOB_NAME}",
+            body: "${currentBuild.currentResult}: Job ${env.JOB_NAME}\nMore Info can be found here: ${env.BUILD_URL}"
+        }
+        
+        success {
+            mail to: 'dmytrodanylov@ukr.net',
+            subject: "Successful Jenkins build: ${env.JOB_NAME}",
+            body: "${currentBuild.currentResult}: Job ${env.JOB_NAME}\nMore Info can be found here: ${env.BUILD_URL}"
+        }
+    }
+}
