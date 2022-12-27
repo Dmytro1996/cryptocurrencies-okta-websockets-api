@@ -1,4 +1,9 @@
 pipeline {
+    options {
+        office365ConnectorWebhooks([
+            [name: "jenkins_ms_teams_webhook", url: "${TEAMS_WEBHOOK}", notifyBackToNormal: true, notifyFailure: true, notifyRepeatedFailure: true, notifySuccess: true, notifyAborted: true]
+        ])
+    }
     agent any
     triggers {
         cron(env.BRANCH_NAME=='master'?'H 9 * * *':'')
