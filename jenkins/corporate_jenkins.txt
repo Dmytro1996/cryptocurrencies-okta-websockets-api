@@ -1,4 +1,11 @@
-pipeline {
+pipeline {    
+    parameters {
+        string(name: "httpPort", defaultValue: "${HTTP_PORT}", description: "Http port")
+        string(name: "OKTA_HOST", defaultValue: "", description: "Okta host")
+        string(name: "OKTA_CLIENT_ID", defaultValue: "", description: "Okta client id")
+        string(name: "OKTA_CLIENT_SECRET", defaultValue: "", description: "Okta client secret")
+        string(name: "OKTA_TOKEN", defaultValue: "", description: "Okta token")
+    }
     options {
         office365ConnectorWebhooks([
             [name: "jenkins_ms_teams_webhook", url: "${TEAMS_WEBHOOK}", notifyBackToNormal: true, notifyFailure: true, notifyRepeatedFailure: true, notifySuccess: true, notifyAborted: true]
@@ -41,7 +48,10 @@ pipeline {
                         branch 'master'
                     }
                     steps {
-                        sh 'mvn clean deploy -DmuleDeploy -Dokta_host=${OKTA_HOST} -Dokta_client_id=${OKTA_CLIENT_ID} -Dokta_token=${OKTA_TOKEN} -Dokta_client_secret=${OKTA_CLIENT_SECRET} -Dhttp_port=${HTTP_PORT}'
+                        wrap([$class: "MaskPasswordsBuildWrapper",
+                            varPasswordPairs: [[password: httpPort],[password: OKTA_HOST],[password: OKTA_CLIENT_ID],[password: OKTA_CLIENT_SECRET],[password: OKTA_TOKEN]]]) {
+                            sh "mvn clean deploy -DmuleDeploy -Dhttp_port=${httpPort} -Dokta_host=${OKTA_HOST} -Dokta_client_id=${OKTA_CLIENT_ID} -Dokta_token=${OKTA_TOKEN} -Dokta_client_secret=${OKTA_CLIENT_SECRET}"
+                       }
                     }
                 }
             }
