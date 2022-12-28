@@ -17,7 +17,7 @@ pipeline {
     agent {
         docker { 
             image 'circleci/openjdk:8-jdk' 
-            args '-v $HOME/.m2:/root/.m2:z -v $MAVEN_HOME/conf/settings.xml:ro -u root'            
+            args '-v $HOME/.m2:/root/.m2:z -u root'            
         }
     }
     stages {
