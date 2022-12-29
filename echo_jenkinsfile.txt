@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage ("Echo command"){
             steps {
-                echo "Hello, Dmytro!"
+                echo "Hello, Dmytro! Have a nice day!"
             }
         }
     }
