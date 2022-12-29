@@ -28,7 +28,7 @@ pipeline {
         }
         stage ("Test"){
             steps {
-                sh 'mvn clean test -s /opt/maven/conf/settings.xml'
+                sh 'mvn clean test'
             }
         }
         stage ("Parallel stage"){
