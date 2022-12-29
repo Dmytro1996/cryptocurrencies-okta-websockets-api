@@ -34,11 +34,11 @@
 					<cloudHubDeployment>
 						<uri>https://anypoint.mulesoft.com</uri>
 						<muleVersion>4.4.0</muleVersion>
-						<username>${MULE_USERNAME}</username>
-						<password>${MULE_PASS}</password>
+						<connectedAppClientId>${deploy_client_id}</connectedAppClientId>
+						<connectedAppClientSecret>${deploy_client_secret}</connectedAppClientSecret>
+						<connectedAppGrantType>client_credentials</connectedAppGrantType>
 						<applicationName>dmytro-danylov-test-app</applicationName>
 						<environment>${MULE_ENV}</environment>
-						<authToken>${MULE_AUTH_TOKEN}</authToken>
 						<businessGroup>${MULE_BUSINESS_GROUP}</businessGroup>
 						<objectStoreV2>true</objectStoreV2>
 						<properties>
